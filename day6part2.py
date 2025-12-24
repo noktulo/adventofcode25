@@ -1,8 +1,42 @@
 # Advent of Code DAY 6 PART 2
 
-numbers_array: list[list[str]] = []
+import numpy as np
+
+input_list: list[list[str]] = []
+grouped_operands: list[list[int]] = []
 operators: list[str] = []
 running_total: int = 0
+
+
+def get_grouped_operands(input_list: list[list[str]]) -> list[list[int]]:
+    input_array = np.array(input_list, np.str_)
+    input_array = np.transpose(input_array)
+    raw_operands: list[str] = []
+    for row in input_array:
+        raw_operands.append("".join(row))
+    grouped_operands: list[list[int]] = []
+    working_group: list[int] = []
+    for row in raw_operands:
+        if "".join(row).strip().isdigit():
+            working_group.append(int(row))
+        elif not "".join(row).isdigit() and len(working_group) > 0:
+            grouped_operands.append(working_group)
+            working_group: list[int] = []
+    return grouped_operands
+
+
+def run_operations(grouped_operands: list[list[int]], operators: list[str]) -> int:
+    grand_total: int = 0
+    for index, operand_group in enumerate(grouped_operands):
+        if operators[index] == "+":
+            for operand in operand_group:
+                grand_total += operand
+        elif operators[index] == "*":
+            subtotal: int = 1
+            for operand in operand_group:
+                subtotal *= operand
+            grand_total += subtotal
+    return grand_total
 
 
 if __name__ == "__main__":
@@ -10,21 +44,10 @@ if __name__ == "__main__":
         for line in f:
             line_array: list[str] = line.split()
             if line_array[0].isdigit():
-                numbers_array.append(list(map(lambda x: int(x), line_array)))
+                input_list.append(list(line))
             else:
                 operators: list[str] = line_array
 
-    for i in range(len(operators)):
-        operands: list[int] = list(map(lambda x: x[i], numbers_array))
-        if operators[i] == "+":
-            subtotal: int = 0
-            for j in range(len(numbers_array)):
-                subtotal += operands[j]
-        elif operators[i] == "*":
-            subtotal: int = 1
-            for j in range(len(numbers_array)):
-                subtotal *= operands[j]
+        grouped_operands: list[list[int]] = get_grouped_operands(input_list)
 
-        running_total += subtotal
-
-    print(running_total)
+    print(run_operations(grouped_operands, operators))
